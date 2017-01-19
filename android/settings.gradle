@@ -1,0 +1,3 @@
+rootProject.name = 'parsely'
+
+include ':app'
