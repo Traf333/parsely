@@ -12,7 +12,6 @@ import {
   View
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
-// import VoiceRecognise from 'VoiceRecognise';
 import MainScreen from './screens/MainScreen';
 import StatScreen from './screens/StatScreen';
 
