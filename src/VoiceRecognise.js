@@ -184,12 +184,6 @@ export default class VoiceRecognise extends Component {
             Cancel
           </Text>
         </TouchableHighlight>
-        <TouchableHighlight onPress={this._destroyRecognizer.bind(this)}>
-          <Text
-              style={styles.action}>
-            Destroy
-          </Text>
-        </TouchableHighlight>
         <View>
           <Button
               onPress={onPress}
