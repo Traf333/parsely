@@ -14,6 +14,16 @@ import {
 import { StackNavigator } from 'react-navigation';
 import MainScreen from './screens/MainScreen';
 import StatScreen from './screens/StatScreen';
+import Storage from 'react-native-storage';
+import {AsyncStorage} from 'react-native';
+
+let storage = new Storage({
+  size: 1000,
+  storageBackend: AsyncStorage,
+  // sync: { return }
+});
+
+global.storage = storage;
 
 const App = StackNavigator({
   Main: {screen: MainScreen},
