@@ -9,7 +9,9 @@ import {
   Navigator,
   Text,
   TextInput,
+  ScrollView,
   Image,
+  WithLabel,
   View
 } from 'react-native';
 
@@ -17,51 +19,56 @@ import Voice from 'react-native-voice';
 import VoiceRecognise from '../VoiceRecognise';
 
 
-const buildItem = value => {
+const buildItem = ({category, value}) => {
   date = new Date
   return {
     id: String(date.getTime()),
-    value: value,
-    created_at: date
+    created_at: date,
+    category,
+    value
   }
 }
 const saveItem = item => storage.save({key: 'item', id: item.id, rawData: item})
+const regex = /\d+/
+
+
+const parseText = text => {
+  const matcher = text.match(regex)
+  if (matcher) {
+    const value = +matcher[0]
+    const category = text.replace(matcher[0], '').trim()
+    return {value, category}
+  } else {
+    return { error: 'Amount not found' }
+  }
+  
+}
 
 class MainScreen extends React.Component {
-  static navigationOptions = {title: 'Parsely',};
+  state = {
+    recognized: '',
+    pitch: '',
+    error: '',
+    end: '',
+    started: '',
+    results: [],
+    partialResults: [],
+    text: ''
+  };
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      recognized: '',
-      pitch: '',
-      error: '',
-      end: '',
-      started: '',
-      results: [],
-      partialResults: [],
-      text: ''
-    };
-    // Voice.onSpeechStart = this.onSpeechStart.bind(this);
-    // Voice.onSpeechRecognized = this.onSpeechRecognized.bind(this);
-    // Voice.onSpeechEnd = this.onSpeechEnd.bind(this);
-    // Voice.onSpeechError = this.onSpeechError.bind(this);
-    Voice.onSpeechResults = this.onSpeechResults.bind(this);
-    // Voice.onSpeechPartialResults = this.onSpeechPartialResults.bind(this);
-    // Voice.onSpeechVolumeChanged = this.onSpeechVolumeChanged.bind(this);
-    this.clear = this.clear.bind(this)
-  }
+  static navigationOptions = {title: 'Parsely',};
 
   componentDidMount() {
     storage.getAllDataForKey('item').then(items => this.setState({results: items}))
+    Voice.onSpeechResults = this.onSpeechResults;   
   }
 
-  clear() {
+  clear = () => {
     storage.clearMapForKey('item')
     this.setState({results: []})
   }
 
-  onSpeechResults(e) {
+  onSpeechResults = (e) => {
     text = e.value[0]
     ToastAndroid.show(e.value.join("\n"), ToastAndroid.LONG)
 
@@ -69,30 +76,28 @@ class MainScreen extends React.Component {
     // ToastAndroid.show(e.value[0], ToastAndroid.LONG)
   }
 
-  startRecognizing(e) {
-    // this.setState({
-    //   recognized: '',
-    //   pitch: '',
-    //   error: '',
-    //   started: '',
-    //   results: [],
-    //   partialResults: [],
-    // });
+  startRecognizing = (e) => {
     const error = Voice.start('ru');
     if (error) {
       ToastAndroid.show(error, ToastAndroid.SHORT);
     }
   }
 
-  stopRecognizing(e) {
+  stopRecognizing = (e) => {
     const error = Voice.stop();
     if (error) {
       ToastAndroid.show(error, ToastAndroid.SHORT);
     }
   }
 
-  submit(value) {
-    const item = buildItem(value)
+  submit = (e) => {
+    const text = e.nativeEvent.text
+    const {error, ...data} = parseText(text)
+    if (error) {
+      ToastAndroid.show(error, ToastAndroid.SHORT)
+      return
+    }
+    const item = buildItem(data)
     saveItem(item)
     this.setState({text: '', results: [...this.state.results, item]})
     this._input.blur()
@@ -102,40 +107,52 @@ class MainScreen extends React.Component {
   render() {
     const {navigate} = this.props.navigation;
     return (
-      <View>
-        <Button title="Set Value" onPress={(e) => this.startRecognizing(e) }/>
-        <Button title="Stat params" onPress={() => navigate(jghfj, {name: 'Jane'}) }/>
-        <TouchableHighlight onPress={this.stopRecognizing.bind(this)}>
-          <Text
-            style={styles.action}>
-            Stop Recognizing
-          </Text>
-        </TouchableHighlight>
-        <TouchableHighlight onLongPress={(e) => this.startRecognizing(e)}>
-          <Text style={styles.stat}>Start Recognizing</Text>
-        </TouchableHighlight>
-        <TouchableHighlight onPress={this.clear}>
-          <Text style={styles.stat}>Clear</Text>
-        </TouchableHighlight>
-        <Text
-          style={styles.stat}>
-          Results
-        </Text>
-        {this.state.results.map(item => {
-          return (
-            <Text
-              key={`result-${item.id}`}
-              style={styles.stat}>
-              {item.value}
-            </Text>
-          )
-        })}
-        <TextInput onChangeText={text => this.setState({text})}
-                   onSubmitEditing={e => this.submit(e.nativeEvent.text)}
-                   value={this.state.text}
-                   blurOnSubmit={true}
-                   ref={input => this._input = input}
-        />
+      <View style={{flex: 1}}>
+        <ScrollView style={{flex: 1}}>
+          <Button title="Set Value" onPress={this.startRecognizing}/>
+                  <Button title="Stat params" onPress={() => navigate(jghfj, {name: 'Jane'}) }/>
+                  <TouchableHighlight onPress={this.stopRecognizing}>
+                    <Text
+                      style={styles.action}>
+                      Stop Recognizing
+                    </Text>
+                  </TouchableHighlight>
+                  <TouchableHighlight onLongPress={this.startRecognizing}>
+                    <Text style={styles.action}>Start Recognizing</Text>
+                  </TouchableHighlight>
+                  <TouchableHighlight onPress={this.clear}>
+                    <Text style={styles.action}>Clear</Text>
+                  </TouchableHighlight>
+                  <Text
+                    style={styles.stat}>
+                    Results
+                  </Text>
+                  {this.state.results.map(item => {
+                    return (
+                      <Text
+                        key={`result-${item.id}`}
+                        style={styles.item}>
+                        {item.category} {item.value}
+                      </Text>
+                    )
+                  })}
+        </ScrollView>
+        <View>
+            <TextInput onChangeText={text => this.setState({text})}
+                                         onSubmitEditing={this.submit}
+                                         value={this.state.text}
+                                         blurOnSubmit={true}
+                                         ref={input => this._input = input}
+                                         style={styles.input}
+                                         placeholderTextColor="#ccc"
+                                         placeholder="На что потратили?"
+                              />
+
+          <TouchableHighlight>
+            <Text></Text>
+          </TouchableHighlight>
+        </View>
+
       </View>
     );
   }
@@ -169,8 +186,21 @@ const styles = StyleSheet.create({
   stat: {
     // textAlign: 'center',
     color: '#B0171F',
-    marginBottom: 1,
+    marginLeft: 10,
+    marginBottom: 3,
   },
+  item: {
+    marginLeft: 10,
+    color: '#222',
+    paddingBottom: 10,
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 3,
+  },
+  input: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    marginHorizontal: 10
+  }
 });
 
 
