@@ -3,6 +3,7 @@ import {
   Alert,
   StyleSheet,
   TouchableHighlight,
+  TouchableOpacity,
   ToastAndroid,
   Button,
   PermissionsAndroid,
@@ -14,35 +15,14 @@ import {
   WithLabel,
   View
 } from 'react-native';
-
 import Voice from 'react-native-voice';
+
 import VoiceRecognise from '../VoiceRecognise';
+import {parseText, buildItem} from "../utils";
 
 
-const buildItem = ({category, value}) => {
-  date = new Date
-  return {
-    id: String(date.getTime()),
-    created_at: date,
-    category,
-    value
-  }
-}
 const saveItem = item => storage.save({key: 'item', id: item.id, rawData: item})
-const regex = /\d+/
 
-
-const parseText = text => {
-  const matcher = text.match(regex)
-  if (matcher) {
-    const value = +matcher[0]
-    const category = text.replace(matcher[0], '').trim()
-    return {value, category}
-  } else {
-    return { error: 'Amount not found' }
-  }
-  
-}
 
 class MainScreen extends React.Component {
   state = {
@@ -60,7 +40,7 @@ class MainScreen extends React.Component {
 
   componentDidMount() {
     storage.getAllDataForKey('item').then(items => this.setState({results: items}))
-    Voice.onSpeechResults = this.onSpeechResults;   
+    Voice.onSpeechResults = this.onSpeechResults;
   }
 
   clear = () => {
@@ -90,8 +70,8 @@ class MainScreen extends React.Component {
     }
   }
 
-  submit = (e) => {
-    const text = e.nativeEvent.text
+  submit = (text) => {
+    // const text = e.nativeEvent.text
     const {error, ...data} = parseText(text)
     if (error) {
       ToastAndroid.show(error, ToastAndroid.SHORT)
@@ -110,43 +90,43 @@ class MainScreen extends React.Component {
       <View style={{flex: 1}}>
         <ScrollView style={{flex: 1}}>
           <Button title="Set Value" onPress={this.startRecognizing}/>
-                  <Button title="Stat params" onPress={() => navigate(jghfj, {name: 'Jane'}) }/>
-                  <TouchableHighlight onPress={this.stopRecognizing}>
-                    <Text
-                      style={styles.action}>
-                      Stop Recognizing
-                    </Text>
-                  </TouchableHighlight>
-                  <TouchableHighlight onLongPress={this.startRecognizing}>
-                    <Text style={styles.action}>Start Recognizing</Text>
-                  </TouchableHighlight>
-                  <TouchableHighlight onPress={this.clear}>
-                    <Text style={styles.action}>Clear</Text>
-                  </TouchableHighlight>
-                  <Text
-                    style={styles.stat}>
-                    Results
-                  </Text>
-                  {this.state.results.map(item => {
-                    return (
-                      <Text
-                        key={`result-${item.id}`}
-                        style={styles.item}>
-                        {item.category} {item.value}
-                      </Text>
-                    )
-                  })}
+          <Button title="Stat params" onPress={() => navigate(jghfj, {name: 'Jane'}) }/>
+          <TouchableHighlight onPress={this.stopRecognizing}>
+            <Text
+              style={styles.action}>
+              Stop Recognizing
+            </Text>
+          </TouchableHighlight>
+          <TouchableOpacity onLongPress={this.startRecognizing} onPressOut={this.stopRecognizing}>
+            <Text style={styles.action}>Start Recognizing</Text>
+          </TouchableOpacity>
+          <TouchableHighlight onPress={this.clear}>
+            <Text style={styles.action}>Clear</Text>
+          </TouchableHighlight>
+          <Text
+            style={styles.stat}>
+            Results
+          </Text>
+          {this.state.results.map(item => {
+            return (
+              <Text
+                key={`result-${item.id}`}
+                style={styles.item}>
+                {item.category} {item.value}
+              </Text>
+            )
+          })}
         </ScrollView>
         <View>
-            <TextInput onChangeText={text => this.setState({text})}
-                                         onSubmitEditing={this.submit}
-                                         value={this.state.text}
-                                         blurOnSubmit={true}
-                                         ref={input => this._input = input}
-                                         style={styles.input}
-                                         placeholderTextColor="#ccc"
-                                         placeholder="На что потратили?"
-                              />
+          <TextInput onChangeText={text => this.setState({text})}
+                     onSubmitEditing={e => this.submit(e.nativeEvent.text)}
+                     value={this.state.text}
+                     blurOnSubmit={true}
+                     ref={input => this._input = input}
+                     style={styles.input}
+                     placeholderTextColor="#ccc"
+                     placeholder="На что потратили?"
+          />
 
           <TouchableHighlight>
             <Text></Text>

@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {
   Alert,
+  AsyncStorage,
   StyleSheet,
   TouchableHighlight,
   ToastAndroid,
@@ -12,14 +13,17 @@ import {
   View
 } from 'react-native';
 import { StackNavigator } from 'react-navigation';
+import Storage from 'react-native-storage';
+
+
 import MainScreen from './screens/MainScreen';
 import StatScreen from './screens/StatScreen';
-import Storage from 'react-native-storage';
-import {AsyncStorage} from 'react-native';
+
 
 let storage = new Storage({
   size: 1000,
   storageBackend: AsyncStorage,
+  defaultExpires: null
   // sync: { return }
 });
 
