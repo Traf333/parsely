@@ -83,30 +83,34 @@ class MainScreen extends React.Component {
     this._input.blur()
   }
 
+  actionButton() {
+    if (this.state.text) {
+      return (
+          <TouchableOpacity 
+            onPress={e => this.submit(this.state.text)}
+            style={styles.sendButton}>
+            <Image source={require('../images/send.png')} />
+          </TouchableOpacity>
+          )
+    }
+
+    return (
+      <TouchableOpacity 
+        onPress={this.startRecognizing}
+        style={styles.sendButton}>
+        <Image source={require('../images/microphone.png')} />
+      </TouchableOpacity>
+    )
+
+  }
 
   render() {
     const {navigate} = this.props.navigation;
     return (
-      <View style={{flex: 1}}>
+      <View style={styles.container}>
         <ScrollView style={{flex: 1}}>
-          <Button title="Set Value" onPress={this.startRecognizing}/>
-          <Button title="Stat params" onPress={() => navigate(jghfj, {name: 'Jane'}) }/>
-          <TouchableHighlight onPress={this.stopRecognizing}>
-            <Text
-              style={styles.action}>
-              Stop Recognizing
-            </Text>
-          </TouchableHighlight>
-          <TouchableOpacity onLongPress={this.startRecognizing} onPressOut={this.stopRecognizing}>
-            <Text style={styles.action}>Start Recognizing</Text>
-          </TouchableOpacity>
-          <TouchableHighlight onPress={this.clear}>
-            <Text style={styles.action}>Clear</Text>
-          </TouchableHighlight>
-          <Text
-            style={styles.stat}>
-            Results
-          </Text>
+
+          {/*<Button title="Stat params" onPress={() => navigate(jghfj, {name: 'Jane'}) }/>*/}
           {this.state.results.map(item => {
             return (
               <Text
@@ -128,9 +132,7 @@ class MainScreen extends React.Component {
                      placeholder="На что потратили?"
           />
 
-          <TouchableHighlight>
-            <Text></Text>
-          </TouchableHighlight>
+          {this.actionButton()}
         </View>
 
       </View>
@@ -142,44 +144,27 @@ class MainScreen extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
     backgroundColor: '#fff',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-
-  action: {
-    textAlign: 'center',
-    color: '#0000FF',
-    marginVertical: 5,
-    fontWeight: 'bold',
-  },
-  stat: {
-    // textAlign: 'center',
-    color: '#B0171F',
-    marginLeft: 10,
-    marginBottom: 3,
   },
   item: {
     marginLeft: 10,
     color: '#222',
-    paddingBottom: 10,
+    paddingVertical: 10,
     borderBottomColor: '#ccc',
     borderBottomWidth: 3,
   },
   input: {
     fontSize: 13,
     fontWeight: 'bold',
-    marginHorizontal: 10
+    marginHorizontal: 10,
+    marginRight: 50
+  },
+  sendButton: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
   }
 });
 

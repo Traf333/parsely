@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Button, View, Text} from 'react-native';
+import {Button, View, Text, Animated, Dimension} from 'react-native';
 
 const title = ({state}) => {
   let message = 'Statistic'
@@ -10,7 +10,10 @@ const title = ({state}) => {
 }
 
 class StatScreen extends React.Component {
-
+  state = {
+    animatedScroll: new Animated.Value(0)
+  }
+  
   static navigationOptions = {
     title: title,
   };
